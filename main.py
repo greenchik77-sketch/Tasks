@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 from database import database, Base, engine
 from models.tasks import Tasks
 
@@ -8,6 +9,13 @@ app = FastAPI(title="Tasks", docs_url="/")
 
 Base.metadata.create_all(engine)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/add_tasks")
 def add_tasks(task: str, description: str, status: bool, db: Session = Depends(database)):
