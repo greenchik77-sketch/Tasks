@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import database, Base, engine
 from models.tasks import Tasks
 
+
 app = FastAPI(title="Tasks", docs_url="/")
+
 
 Base.metadata.create_all(engine)
 
@@ -18,11 +20,11 @@ app.add_middleware(
 )
 
 @app.post("/add_tasks")
-def add_tasks(task: str, description: str, status: bool, db: Session = Depends(database)):
+def add_tasks(task: str, description: str, db: Session = Depends(database)):
     tasks = Tasks(
         task=task,
         description=description,
-        status=status,
+        status=False,
         created_at=datetime.now()
     )
     db.add(tasks)
@@ -50,6 +52,17 @@ def update_tasks(ident: int, task: str, description: str, status: bool, db: Sess
 
     db.commit()
     return {"message": "Ma 'lumot o'zgartirildi"}
+
+@app.put("/update_status")
+def update_stat(ident: int, db: Session = Depends(database)):
+    tasks = db.query(Tasks).filter(Tasks.id == ident).first()
+    if not tasks:
+        raise HTTPException(status_code=404, detail="Ma'lumot topilmadi")
+
+    tasks.status = True
+
+    db.commit()
+    return {"message": "Topshiriq bajarildi"}
 
 
 @app.delete("/delete_tasks")
